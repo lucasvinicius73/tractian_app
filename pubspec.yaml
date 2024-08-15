@@ -13,6 +13,9 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.6
+  http: ^1.2.2
+  provider: ^6.1.2
+  get_it: ^7.7.0
 
 dev_dependencies:
   flutter_test:
@@ -31,4 +34,6 @@ flutter:
   - assets/icons/criticalIcon.png
   - assets/icons/energyIcon.png
   - assets/icons/GoLocation.png
+  - assets/icons/component.png
+  - assets/icons/asset.png
   

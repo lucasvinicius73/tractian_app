@@ -5,26 +5,20 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:tractian_app/app_widget.dart';
-
+import 'package:tractian_app/models/asset_model.dart';
+import 'package:tractian_app/models/model.dart';
+import 'package:tractian_app/models/node_model.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  Node<Model> nodeModel = Node(Model(id: "eae", name: "Node Model"));
+  Node<AssetModel> assetModel = Node(AssetModel(
+      sensorId: "sensorId",
+      sensorType: "sensorType",
+      status: "status",
+      gatewayId: "gatewayId",
+      locationId: "locationId"));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  nodeModel.children.add(assetModel);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
-  });
+  print(nodeModel.children);
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:tractian_app/models/asset_model.dart';
+import 'package:tractian_app/models/location_model.dart';
 import 'package:tractian_app/models/node_model.dart';
 
 class TreeWidget extends StatelessWidget {
@@ -10,14 +12,18 @@ class TreeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print("Nó ${node.data} tem ${node.children.length} filhos");
+    String icon = 'assets/icons/criticalIcon.png';
+    switch (node.data) {
+      case LocationModel():
+        icon = 'assets/icons/GoLocation.png';
+      case AssetModel():
+        icon = 'assets/icons/asset.png';
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
-          children: [
-            Image.asset("assets/icons/GoLocation.png"),
-            Text(node.data)
-          ],
+          children: [Image.asset(icon), Text('${node.data}')],
         ),
         const SizedBox(
           height: 5,

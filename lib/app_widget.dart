@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tractian_app/pages/assets_page.dart';
+import 'package:tractian_app/pages/AssetsPage/assets_page.dart';
 import 'package:tractian_app/pages/home_page.dart';
 
 class MyApp extends StatelessWidget {
@@ -15,7 +15,10 @@ class MyApp extends StatelessWidget {
       ),
       routes: {
         '/' : (context) => const HomePage(),
-        '/assets_page': (context) => const AssetsPage()
+        '/assets_page': (context){
+          final args = ModalRoute.of(context)?.settings.arguments as Map;
+          return AssetsPage(companie: args['companie']);
+        }
       },
     );
   }

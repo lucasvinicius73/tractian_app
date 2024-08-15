@@ -1,30 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tractian_app/models/companie_model.dart';
+import 'package:tractian_app/pages/AssetsPage/assets_controller.dart';
+import 'package:tractian_app/provider.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Image.asset('assets/LOGOTRACTIAN.png'),
-        backgroundColor: const Color(0xFF17192D),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            buildButtonHome("Jaguar Unit", context),
-            buildButtonHome("Tobias Unit", context),
-            buildButtonHome("Apex Unit", context),
-          ],
-        ),
-      ),
-    );
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final controller = getIt<AssetsController>();
+  @override
+  void initState() {
+    controller.getCompanies();
+
+    super.initState();
   }
 
-  Widget buildButtonHome(String title, BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+        listenable: controller,
+        builder: (context, child) {
+          Widget body = Container();
+          if (controller.companies.isNotEmpty) {
+            body = Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  buildButtonHome(controller.companies[0], context),
+                  buildButtonHome(controller.companies[1], context),
+                  buildButtonHome(controller.companies[2], context),
+                ],
+              ),
+            );
+          }
+          if (controller.companies.isEmpty) {
+            body = Center(child: CircularProgressIndicator());
+          }
+          return Scaffold(
+              appBar: AppBar(
+                title: Image.asset('assets/LOGOTRACTIAN.png'),
+                backgroundColor: const Color(0xFF17192D),
+                centerTitle: true,
+              ),
+              body: body);
+        });
+  }
+
+  Widget buildButtonHome(Companie companie, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       child: SizedBox(
@@ -43,14 +70,15 @@ class HomePage extends StatelessWidget {
                 width: 20,
               ),
               Text(
-                title,
+                companie.name,
                 style: const TextStyle(
                     fontSize: 18, color: Colors.white, fontFamily: 'Roboto'),
               ),
             ],
           ),
           onPressed: () {
-            Navigator.of(context).pushNamed('/assets_page');
+            Navigator.of(context)
+                .pushNamed('/assets_page', arguments: {'companie': companie});
           },
         ),
       ),

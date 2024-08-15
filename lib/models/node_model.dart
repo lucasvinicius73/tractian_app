@@ -1,6 +1,6 @@
-class Node<T> {
-  T data;
-  List<Node<T>> children;
+class Node<Model> {
+  Model data;
+  List<Node<Model>> children;
 
   Node(this.data) : children = [];
 }

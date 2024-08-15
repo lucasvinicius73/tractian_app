@@ -1,26 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:tractian_app/models/companie_model.dart';
 import 'package:tractian_app/models/node_model.dart';
+import 'package:tractian_app/pages/AssetsPage/assets_controller.dart';
+import 'package:tractian_app/provider.dart';
 import 'package:tractian_app/widgets/tree_widget.dart';
 
-class AssetsPage extends StatelessWidget {
-  const AssetsPage({super.key});
+class AssetsPage extends StatefulWidget {
+  final Companie companie;
+  const AssetsPage({super.key, required this.companie});
+
+  @override
+  State<AssetsPage> createState() => _AssetsPageState();
+}
+
+class _AssetsPageState extends State<AssetsPage> {
+  final controller = getIt<AssetsController>();
+  @override
+  void initState() {
+    controller.buildTree(widget.companie);
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          "Assets",
-          style: TextStyle(color: Colors.white, fontFamily: 'Roboto'),
-        ),
-        backgroundColor: const Color(0xFF17192D),
-        centerTitle: true,
-      ),
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [buildHeader(), const Divider(), buildTree()],
-      ),
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, child) {
+        Widget body = Container();
+        if (controller.first.children.isNotEmpty) {
+          body = Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [buildHeader(), const Divider(), buildTree(controller)],
+          );
+        }
+        if (controller.first.children.isEmpty) {
+          body = Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        return Scaffold(
+            appBar: AppBar(
+              iconTheme: const IconThemeData(color: Colors.white),
+              title: const Text(
+                "Assets",
+                style: TextStyle(color: Colors.white, fontFamily: 'Roboto'),
+              ),
+              backgroundColor: const Color(0xFF17192D),
+              centerTitle: true,
+            ),
+            body: SingleChildScrollView(child: body));
+      },
     );
   }
 
@@ -98,16 +129,9 @@ class AssetsPage extends StatelessWidget {
     );
   }
 
-  Widget buildTree() {
-    Node<String> root = Node('A');
-    Node<String> B = Node('B');
-    Node<String> C = Node('C');
-    Node<String> D = Node('D');
-    Node<String> E = Node('E');
-
-    root.children.addAll([B, C]);
-    B.children.add(D);
-    C.children.add(E);
-    return TreeWidget(node: root);
+  Widget buildTree(AssetsController controller) {
+    //B.children.add(D);
+    // C.children.add(E);
+    return TreeWidget(node: controller.first);
   }
 }
