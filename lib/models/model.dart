@@ -4,4 +4,9 @@ class Model {
   final String? parentId;
 
   Model({required this.id, required this.name, this.parentId});
+
+  @override
+  String toString() {
+    return name;
+  }
 }

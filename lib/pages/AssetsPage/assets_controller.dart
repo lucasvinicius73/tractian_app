@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tractian_app/models/asset_model.dart';
 import 'package:tractian_app/models/companie_model.dart';
-import 'package:tractian_app/models/location_model.dart';
 import 'package:tractian_app/models/model.dart';
 import 'package:tractian_app/models/node_model.dart';
 import 'package:tractian_app/shared/service.dart';
@@ -12,7 +11,8 @@ class AssetsController extends ChangeNotifier {
   List<AssetModel> assets = [];
   List<Node<Model>> roots = [];
   List<Node<Model>> subLocations = [];
-  Node<Model> first = Node<Model>(Model(id: "id", name: "name"));
+  Node<Model> root = Node<Model>(Model(id: "id", name: "name"));
+  Node<Model> nodeAux = Node<Model>(Model(id: "id", name: "fake"));
 
   final service = ServiceJson();
 
@@ -22,7 +22,7 @@ class AssetsController extends ChangeNotifier {
   }
 
   disposer() {
-    first.children.clear();
+    root.children.clear();
     locations.clear();
     roots.clear();
     subLocations.clear();
@@ -42,6 +42,7 @@ class AssetsController extends ChangeNotifier {
 
   buildTree(Companie companie) async {
     disposer();
+    root = Node(Model(id: 'eae', name: companie.name));
     await getLocations(companie);
     await getAssets(companie.id);
     await buildRoots(companie);
@@ -60,66 +61,127 @@ class AssetsController extends ChangeNotifier {
         subLocations.add(node);
       }
     }
-    first = Node(Model(id: '', name: companie.name));
-    first.children.addAll(roots);
+    root.children.addAll(roots);
     notifyListeners();
   }
 
   buildNodes() {
     for (var subLocation in subLocations) {
-      Node<Model> node = getNode(first, subLocation.data.parentId!);
+      Node<Model>? node = getNode(root, subLocation.data.parentId!);
+      if (node == null) {
+        continue;
+      }
       node.children.add(subLocation);
     }
+    int i = 0;
+    // assets.forEach(
+    //     (asset) => print("Nome: ${asset.name} e SensorID: ${asset.sensorId}"));
+    while (assets.isNotEmpty) {
+      if (i == assets.length) {
+        i = 0;
+      }
+      print(
+          "O Item ${assets[i]} indice $i entrou na filtragem de ${assets.length} itens");
 
-    // for (var location in first.children) {
-    //   location.children.addAll(subLocations.where(
-    //       (subLocation) => subLocation.data.parentId == location.data.id));
-    // }
-    for (var i = assets.length - 1; i >= 0; i--) {
-      AssetModel asset = assets[i];
-      if (asset.locationId == null || asset.parentId == null) {
-        print("Asset que foi pra raiz: ${asset.name}");
-        first.children.add(Node<AssetModel>(asset));
-        assets.remove(asset);
+      if (assets[i].locationId == null && assets[i].parentId == null) {
+        print("Asset que foi pra raiz: ${assets[i].name}");
+        root.children.add(Node<AssetModel>(assets[i]));
+        assets.remove(assets[i]);
+        continue;
       }
-      if (asset.locationId != null && asset.sensorId == null) {
-        Node<Model> locationNode = getNode(first, asset.locationId!);
-        print(
-            "O Asset ${asset.name} é filho do Local ${locationNode.data.name}");
-        locationNode.children.add(Node<Model>(asset));
-        assets.remove(asset);
-      }
-      if (asset.parentId != null && asset.sensorId == null) {
-        Node<Model> node = getNode(first, asset.parentId!);
-        node.children.add(Node<AssetModel>(asset));
-        assets.remove(asset);
-      }
-      if (asset.sensorType != null) {
-        if (asset.locationId != null) {
-          Node<Model> node = getNode(first, asset.locationId!);
-          node.children.add(Node<Model>(asset));
-          assets.remove(asset);
+
+      if (assets[i].locationId != null && assets[i].sensorId == null) {
+        Node<Model>? locationNode = getNode(root, assets[i].locationId!);
+        if (locationNode == null) {
+          i++;
+          continue;
         }
-        if (asset.parentId != null) {
-          Node<Model> node = getNode(first, asset.parentId!);
-          node.children.add(Node<AssetModel>(asset));
-          assets.remove(asset);
+        print(
+            "O Asset ${assets[i].name} é filho do Local ${locationNode.data.name}");
+        locationNode.children.add(Node<Model>(assets[i]));
+        assets.remove(assets[i]);
+        continue;
+      }
+
+      if (assets[i].parentId != null && assets[i].sensorId == null) {
+        Node<Model>? node = getNode(root, assets[i].parentId!);
+        if (node == null) {
+          i++;
+          continue;
+        }
+        print("O Asset ${assets[i].name} é filho do Asset ${node.data.name}");
+        node.children.add(Node<AssetModel>(assets[i]));
+        assets.remove(assets[i]);
+        continue;
+      }
+
+      if (assets[i].sensorType != null) {
+        if (assets[i].locationId != null) {
+          Node<Model>? node = getNode(root, assets[i].locationId!);
+          if (node == null) {
+            i++;
+            continue;
+          }
+          print(
+              "O Componente ${assets[i].name} é filho do Local ${node.data.name}");
+          node.children.add(Node<Model>(assets[i]));
+          assets.remove(assets[i]);
+          continue;
+        }
+
+        if (assets[i].parentId != null) {
+          print("O componente ${assets[i]} entrou no filtro do Filho de Asset");
+
+          Node<Model>? node = getNode(root, assets[i].parentId!);
+          if (node == null) {
+            i++;
+            continue;
+          }
+          print(
+              "O Componente ${assets[i].name} é filho do Asset ${node.data.name}");
+          node.children.add(Node<AssetModel>(assets[i]));
+          assets.remove(assets[i]);
+          continue;
         }
       }
     }
+
     notifyListeners();
   }
 
-  Node<Model> getNode(Node<Model> node, String nodeId) {
-    Node<Model> aux = Node(Model(id: "id", name: "fake"));
+  Node<Model>? getNode(Node<Model> node, String nodeId) {
     for (var child in node.children) {
       if (child.data.id == nodeId) {
-        aux = child;
+        return child;
       }
       if (child.data.id != nodeId && child.children.isNotEmpty) {
-        aux = getNode(child, nodeId);
+        var foundNode = getNode(child, nodeId);
+        if (foundNode != null) {
+          return foundNode;
+        }
       }
     }
-    return aux;
+    return null;
+  }
+
+  searchNode(String nodeName) {
+    List<Node<Model>> path = [];
+
+    bool findPathRecursive(Node<Model> node) {
+      path.add(node);
+      if (node.data.toString() == nodeName) {
+        return true;
+      }
+      for (var child in node.children) {
+        if (findPathRecursive(child)) {
+          return true;
+        }
+      }
+      path.removeLast();
+      return false;
+    }
+
+    findPathRecursive(root);
+    return path;
   }
 }

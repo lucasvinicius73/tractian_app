@@ -13,17 +13,44 @@ class TreeWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     print("Nó ${node.data} tem ${node.children.length} filhos");
     String icon = 'assets/icons/criticalIcon.png';
-    switch (node.data) {
-      case LocationModel():
-        icon = 'assets/icons/GoLocation.png';
-      case AssetModel():
-        icon = 'assets/icons/asset.png';
+    Icon? status;
+    if (node.data is LocationModel) {
+      icon = 'assets/icons/GoLocation.png';
+    } else if (node.data is AssetModel) {
+      icon = 'assets/icons/asset.png';
+      if (node.data.sensorType != null) {
+        icon = "assets/icons/component.png";
+        if (node.data.status == "operating") {
+          status = const Icon(
+            Icons.bolt,
+            color: Colors.green,
+            size: 20,
+          );
+        }
+        if (node.data.status == "alert") {
+          status = const Icon(
+            Icons.circle,
+            color: Colors.red,
+            size: 13,
+          );
+        }
+      }
     }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
-          children: [Image.asset(icon), Text('${node.data}')],
+          children: [
+            Image.asset(
+              icon,
+              scale: 1.7,
+            ),
+            Text('${node.data}'),
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: status ?? const SizedBox(),
+            )
+          ],
         ),
         const SizedBox(
           height: 5,

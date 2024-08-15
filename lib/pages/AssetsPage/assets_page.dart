@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tractian_app/models/companie_model.dart';
-import 'package:tractian_app/models/node_model.dart';
 import 'package:tractian_app/pages/AssetsPage/assets_controller.dart';
 import 'package:tractian_app/provider.dart';
 import 'package:tractian_app/widgets/tree_widget.dart';
@@ -28,14 +27,22 @@ class _AssetsPageState extends State<AssetsPage> {
       listenable: controller,
       builder: (context, child) {
         Widget body = Container();
-        if (controller.first.children.isNotEmpty) {
+        if (controller.root.children.isNotEmpty) {
           body = Column(
             mainAxisSize: MainAxisSize.min,
-            children: [buildHeader(), const Divider(), buildTree(controller)],
+            children: [
+              buildHeader(),
+              const Divider(),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                child: buildTree(controller),
+              )
+            ],
           );
         }
-        if (controller.first.children.isEmpty) {
-          body = Center(
+        if (controller.root.children.isEmpty) {
+          body = const Center(
             child: CircularProgressIndicator(),
           );
         }
@@ -43,9 +50,10 @@ class _AssetsPageState extends State<AssetsPage> {
         return Scaffold(
             appBar: AppBar(
               iconTheme: const IconThemeData(color: Colors.white),
-              title: const Text(
-                "Assets",
-                style: TextStyle(color: Colors.white, fontFamily: 'Roboto'),
+              title: Text(
+                "Assets ${widget.companie.name}",
+                style:
+                    const TextStyle(color: Colors.white, fontFamily: 'Roboto'),
               ),
               backgroundColor: const Color(0xFF17192D),
               centerTitle: true,
@@ -61,13 +69,39 @@ class _AssetsPageState extends State<AssetsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            color: const Color(0xFFEAEFF3),
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
-            width: 328,
-            height: 32,
-            child: const Text("Buscar Ativo ou Local",
-                style: TextStyle(color: Color(0xFF77818C))),
+          SizedBox(
+            width: 350,
+            height: 40,
+            child: TextFormField(
+              onChanged: (value) {},
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.only(
+                  top: 8,
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.grey.shade600,
+                ),
+                hintText: 'Buscar Ativo ou Local',
+                isDense: true,
+                fillColor: const Color(0xFFEAEFF3),
+                filled: true,
+                prefixIconConstraints: const BoxConstraints(
+                  minHeight: 48,
+                  minWidth: 38,
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderRadius: BorderRadius.circular(100),
+                  borderSide:
+                      const BorderSide(color: Color(0xFFF1F5F4), width: 3),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderRadius: BorderRadius.circular(100),
+                  borderSide:
+                      const BorderSide(color: Color(0xFFF1F5F4), width: 3),
+                ),
+              ),
+            ),
           ),
           const SizedBox(
             height: 10,
@@ -132,6 +166,6 @@ class _AssetsPageState extends State<AssetsPage> {
   Widget buildTree(AssetsController controller) {
     //B.children.add(D);
     // C.children.add(E);
-    return TreeWidget(node: controller.first);
+    return TreeWidget(node: controller.root);
   }
 }
