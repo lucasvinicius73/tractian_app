@@ -1,24 +1,24 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+import 'package:flutter/material.dart';
+import 'package:string_similarity/string_similarity.dart';
+import 'package:tractian_app/pages/AssetsPage/assets_controller.dart';
+import 'package:tractian_app/provider.dart';
 
-import 'package:tractian_app/models/asset_model.dart';
-import 'package:tractian_app/models/model.dart';
-import 'package:tractian_app/models/node_model.dart';
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  setupProviders();
+  final controller = getIt<AssetsController>();
 
-void main() {
-  Node<Model> nodeModel = Node(Model(id: "eae", name: "Node Model"));
-  Node<AssetModel> assetModel = Node(AssetModel(
-      sensorId: "sensorId",
-      sensorType: "sensorType",
-      status: "status",
-      gatewayId: "gatewayId",
-      locationId: "locationId"));
+  await controller.getCompanies();
+  await controller.fetchAll(controller.companies[0]);
+  controller.searchItemNode("Motor");
 
-  nodeModel.children.add(assetModel);
+  // similar() {
+  //   return "MOTOR TC01 COAL UNLOADING AF02"
+  //       .toLowerCase()
+  //       .similarityTo("Motor".toLowerCase());
+  // }
 
-  print(nodeModel.children);
+  // print(
+  //     "Objeto Comparado: ${"MOTOR TC01 COAL UNLOADING AF02".split(" ").first}");
+  // print("Busca ${similar()}");
 }

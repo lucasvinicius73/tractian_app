@@ -16,8 +16,7 @@ class _AssetsPageState extends State<AssetsPage> {
   final controller = getIt<AssetsController>();
   @override
   void initState() {
-    controller.buildTree(widget.companie);
-
+    controller.fetchAll(widget.companie);
     super.initState();
   }
 
@@ -42,8 +41,10 @@ class _AssetsPageState extends State<AssetsPage> {
           );
         }
         if (controller.root.children.isEmpty) {
-          body = const Center(
-            child: CircularProgressIndicator(),
+          body = Padding(
+            padding:
+                EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.38),
+            child: const Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -164,8 +165,6 @@ class _AssetsPageState extends State<AssetsPage> {
   }
 
   Widget buildTree(AssetsController controller) {
-    //B.children.add(D);
-    // C.children.add(E);
     return TreeWidget(node: controller.root);
   }
 }

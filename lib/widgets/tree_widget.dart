@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:tractian_app/models/asset_model.dart';
 import 'package:tractian_app/models/location_model.dart';
 import 'package:tractian_app/models/node_model.dart';
@@ -60,7 +61,7 @@ class TreeWidget extends StatelessWidget {
                 fit: FlexFit.loose,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 20),
-                  child: ListView.builder(
+                  child: SuperListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: node.children.length,
