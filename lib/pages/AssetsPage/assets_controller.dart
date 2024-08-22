@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tractian_app/models/asset_model.dart';
 import 'package:tractian_app/models/companie_model.dart';
+import 'package:tractian_app/models/location_model.dart';
 import 'package:tractian_app/models/model.dart';
 import 'package:tractian_app/models/node_model.dart';
 import 'package:tractian_app/shared/service.dart';
@@ -14,7 +15,7 @@ class AssetsController extends ChangeNotifier {
   List<Node<Model>> subLocations = [];
   Node<Model> root = Node<Model>(Model(id: "id", name: "name"));
   final Map<String, Node<Model>> nodeIdMap = {};
-  List<Node<Model>> searchResult = [];
+  Map<String, Node<Model>> searchResult = {};
 
   final service = ServiceJson();
 
@@ -189,14 +190,80 @@ class AssetsController extends ChangeNotifier {
   }
 
   searchItemNode(String name) {
-    searchResult = nodeIdMap.values
+    List<Node<Model>> searchResultAux = [];
+    searchResultAux = nodeIdMap.values
         .where((element) =>
             element.data.name.toLowerCase().similarityTo(name.toLowerCase()) >
             0.2)
         .toList();
+
+    searchResultAux.forEach((element) =>
+        print("Item encontrado antes de Filtrar: ${element.data.name}"));
+
+    for (var search in searchResultAux) {
+      if (search is Node<LocationModel>) {
+        //Verifica primero se tem Locais
+        print("O item ${search.data.name} é um Local");
+        if (search.data.parentId == null) {
+          //Verifica se não é um subLocal
+          searchResult[search.data.id] = search;
+          searchResultAux.remove(search);
+        }
+      } else if (search is Node<AssetModel>) {
+        Node<Model>? father = findFather(search);
+        if (father != null) {
+          searchResult[father.data.id] = father;
+        } else if (father == null) {
+          searchResult[search.data.id] = search;
+        }
+      }
+    }
     print("A busca encontrou ${searchResult.length} itens");
-    searchResult
-        .forEach((element) => print("Itens buscado: ${element.data.name}"));
+
+    searchResult.forEach((key, value) {
+      print("Iten Encontrado: ${value.data.name} Tipo: ${value}");
+    });
+  }
+
+  Node<Model>? findFather(Node<Model> nodeSon) {
+    if (nodeSon.data.parentId != null) {
+      Node<Model>? father = nodeIdMap[nodeSon.data.parentId];
+      while (father!.data.parentId != null) {
+        father = nodeIdMap[father.data.parentId]!;
+      }
+      Node<Model>? fatherLocal = findFather(father);
+      if (fatherLocal == null) {
+        return father;
+      } else {
+        var aux = findFather(fatherLocal);
+        if (aux != null) {
+          return aux;
+        } else {
+          return fatherLocal;
+        }
+      }
+    }
+    if (nodeSon.data.locationId != null) {
+      return nodeIdMap[nodeSon.data.locationId];
+    }
+    return null;
+
+    // if (father != null) {
+    //   if (father.data.parentId == null) {
+    //     if (father.data.locationId != null) {
+    //       var fatherLocal = findFather(nodeIdMap[father.data.locationId]!);
+    //       if (fatherLocal == null) {
+    //         return nodeIdMap[father.data.locationId];
+    //       }
+    //       return fatherLocal;
+    //     }
+    //     return father;
+    //   } else {
+    //     return findFather(father);
+    //   }
+    // } else {
+    //   return father;
+    // }
   }
 
   searchNode(String nodeName) {

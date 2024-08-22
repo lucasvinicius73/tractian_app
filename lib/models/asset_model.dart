@@ -5,14 +5,12 @@ class AssetModel extends Model {
   final String? sensorType;
   final String? status;
   final String? gatewayId;
-  final String? locationId;
 
   AssetModel({
     required this.sensorId,
     required this.sensorType,
     required this.status,
     required this.gatewayId,
-    required this.locationId,
   }) : super(id: '', name: '');
 
   AssetModel.fromJson(Map json)
@@ -20,8 +18,11 @@ class AssetModel extends Model {
         sensorType = json['sensorType'],
         status = json['status'],
         gatewayId = json['gatewayId'],
-        locationId = json['locationId'],
-        super(id: json['id'], name: json['name'], parentId: json['parentId']);
+        super(
+            id: json['id'],
+            name: json['name'],
+            parentId: json['parentId'],
+            locationId: json['locationId']);
 
   @override
   String toString() {
