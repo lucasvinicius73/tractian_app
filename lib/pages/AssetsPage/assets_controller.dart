@@ -30,6 +30,7 @@ class AssetsController extends ChangeNotifier {
     roots.clear();
     subLocations.clear();
     assets.clear();
+    searchResult.clear();
     //otifyListeners();
   }
 
@@ -190,52 +191,55 @@ class AssetsController extends ChangeNotifier {
   }
 
   searchItemNode(String name) {
+    searchResult.clear();
     List<Node<Model>> searchResultAux = [];
     searchResultAux = nodeIdMap.values
         .where((element) =>
             element.data.name.toLowerCase().similarityTo(name.toLowerCase()) >
-            0.2)
+            0.45)
         .toList();
 
     searchResultAux.forEach((element) =>
         print("Item encontrado antes de Filtrar: ${element.data.name}"));
 
     for (var search in searchResultAux) {
-      if (search is Node<LocationModel>) {
-        //Verifica primero se tem Locais
-        print("O item ${search.data.name} é um Local");
-        if (search.data.parentId == null) {
-          //Verifica se não é um subLocal
-          searchResult[search.data.id] = search;
-          searchResultAux.remove(search);
-        }
-      } else if (search is Node<AssetModel>) {
-        Node<Model>? father = findFather(search);
-        if (father != null) {
-          searchResult[father.data.id] = father;
-        } else if (father == null) {
-          searchResult[search.data.id] = search;
-        }
+      Node<Model>? father = findFather(search, name);
+      if (father != null) {
+        searchResult[father.data.id] = father;
+      } else if (father == null) {
+        searchResult[search.data.id] = search;
       }
+      // if (search is Node<LocationModel>) {
+      //   //Verifica primero se tem Locais
+      //   print("O item ${search.data.name} é um Local");
+      //   if (search.data.parentId == null) {
+      //     //Verifica se não é um subLocal
+      //     searchResult[search.data.id] = search;
+      //     searchResultAux.remove(search);
+      //   }
+      // } else if (search is Node<AssetModel>) {}
     }
     print("A busca encontrou ${searchResult.length} itens");
 
     searchResult.forEach((key, value) {
       print("Iten Encontrado: ${value.data.name} Tipo: ${value}");
     });
+    notifyListeners();
   }
 
-  Node<Model>? findFather(Node<Model> nodeSon) {
+  Node<Model>? findFather(Node<Model> nodeSon, String name) {
     if (nodeSon.data.parentId != null) {
       Node<Model>? father = nodeIdMap[nodeSon.data.parentId];
+      compareAndRemove(father!, name);
       while (father!.data.parentId != null) {
+        //compareAndRemove(father, name);
         father = nodeIdMap[father.data.parentId]!;
       }
-      Node<Model>? fatherLocal = findFather(father);
+      Node<Model>? fatherLocal = findFather(father, name);
       if (fatherLocal == null) {
         return father;
       } else {
-        var aux = findFather(fatherLocal);
+        var aux = findFather(fatherLocal, name);
         if (aux != null) {
           return aux;
         } else {
@@ -244,26 +248,24 @@ class AssetsController extends ChangeNotifier {
       }
     }
     if (nodeSon.data.locationId != null) {
-      return nodeIdMap[nodeSon.data.locationId];
+      var locationFather = nodeIdMap[nodeSon.data.locationId];
+      locationFather!.children.clear();
+      locationFather.children.add(nodeSon);
+
+      return locationFather;
     }
     return null;
+  }
 
-    // if (father != null) {
-    //   if (father.data.parentId == null) {
-    //     if (father.data.locationId != null) {
-    //       var fatherLocal = findFather(nodeIdMap[father.data.locationId]!);
-    //       if (fatherLocal == null) {
-    //         return nodeIdMap[father.data.locationId];
-    //       }
-    //       return fatherLocal;
-    //     }
-    //     return father;
-    //   } else {
-    //     return findFather(father);
-    //   }
-    // } else {
-    //   return father;
-    // }
+  compareAndRemove(Node<Model> node, String name) {
+    print(
+        "Nó que vai ser comparado: ${node.data.name} Filhos: ${node.children.length}");
+
+    for (var i = node.children.length; i > node.children.length + 1; i--) {
+      if (node.children[i].data.name.similarityTo(name) < 0.45) {
+        node.children.remove(node.children[i]);
+      }
+    }
   }
 
   searchNode(String nodeName) {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tractian_app/models/companie_model.dart';
+import 'package:tractian_app/models/model.dart';
+import 'package:tractian_app/models/node_model.dart';
 import 'package:tractian_app/pages/AssetsPage/assets_controller.dart';
 import 'package:tractian_app/provider.dart';
 import 'package:tractian_app/widgets/tree_widget.dart';
@@ -26,7 +28,9 @@ class _AssetsPageState extends State<AssetsPage> {
       listenable: controller,
       builder: (context, child) {
         Widget body = Container();
-        if (controller.root.children.isNotEmpty) {
+
+        if (controller.searchResult.isEmpty &&
+            controller.root.children.isNotEmpty) {
           body = Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -35,11 +39,28 @@ class _AssetsPageState extends State<AssetsPage> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: buildTree(controller),
+                child: buildTree(controller.root),
               )
             ],
           );
         }
+        if (controller.searchResult.isNotEmpty) {
+          Node<Model> searchNode = Node(Model(id: "", name: "Search"));
+          searchNode.children.addAll(controller.searchResult.values);
+          body = Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildHeader(),
+              const Divider(),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                child: buildTree(searchNode),
+              )
+            ],
+          );
+        }
+
         if (controller.root.children.isEmpty) {
           body = Padding(
             padding:
@@ -74,7 +95,10 @@ class _AssetsPageState extends State<AssetsPage> {
             width: 350,
             height: 40,
             child: TextFormField(
-              onChanged: (value) {},
+              //onChanged: (value) {},
+              onFieldSubmitted: (value) {
+              controller.searchItemNode(value);
+              },
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.only(
                   top: 8,
@@ -164,7 +188,7 @@ class _AssetsPageState extends State<AssetsPage> {
     );
   }
 
-  Widget buildTree(AssetsController controller) {
-    return TreeWidget(node: controller.root);
+  Widget buildTree(Node<Model> node) {
+    return TreeWidget(node: node);
   }
 }
