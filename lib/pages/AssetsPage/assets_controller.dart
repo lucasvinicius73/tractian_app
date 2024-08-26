@@ -31,7 +31,7 @@ class AssetsController extends ChangeNotifier {
     subLocations.clear();
     assets.clear();
     searchResult.clear();
-    //otifyListeners();
+    //notifyListeners();
   }
 
   getLocations(Companie companie) async {
@@ -190,6 +190,32 @@ class AssetsController extends ChangeNotifier {
     }
   }
 
+  filterNodes(String status) {
+    searchResult.clear();
+    notifyListeners();
+
+    List<Node<Model>> filterResultAux = [];
+    filterResultAux = nodeIdMap.values.where((element) {
+      if (element is Node<AssetModel>) {
+        if (element.data.status == status) {
+          return true;
+        }
+        return false;
+      }
+      return false;
+    }).toList();
+
+    for (var search in filterResultAux) {
+      Node<Model>? father = findFatherfilter(search, status);
+      if (father != null) {
+        searchResult[father.data.id] = father;
+      } else if (father == null) {
+        searchResult[search.data.id] = search;
+      }
+    }
+    notifyListeners();
+  }
+
   searchItemNode(String name) {
     searchResult.clear();
     List<Node<Model>> searchResultAux = [];
@@ -203,21 +229,12 @@ class AssetsController extends ChangeNotifier {
         print("Item encontrado antes de Filtrar: ${element.data.name}"));
 
     for (var search in searchResultAux) {
-      Node<Model>? father = findFather(search, name);
+      Node<Model>? father = findFatherSearch(search, name);
       if (father != null) {
         searchResult[father.data.id] = father;
       } else if (father == null) {
         searchResult[search.data.id] = search;
       }
-      // if (search is Node<LocationModel>) {
-      //   //Verifica primero se tem Locais
-      //   print("O item ${search.data.name} é um Local");
-      //   if (search.data.parentId == null) {
-      //     //Verifica se não é um subLocal
-      //     searchResult[search.data.id] = search;
-      //     searchResultAux.remove(search);
-      //   }
-      // } else if (search is Node<AssetModel>) {}
     }
     print("A busca encontrou ${searchResult.length} itens");
 
@@ -227,19 +244,50 @@ class AssetsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Node<Model>? findFather(Node<Model> nodeSon, String name) {
+  Node<Model>? findFatherSearch(Node<Model> nodeSon, String name) {
     if (nodeSon.data.parentId != null) {
       Node<Model>? father = nodeIdMap[nodeSon.data.parentId];
-      compareAndRemove(father!, name);
+      compareAndRemoveSearch(father!, name);
       while (father!.data.parentId != null) {
         //compareAndRemove(father, name);
         father = nodeIdMap[father.data.parentId]!;
       }
-      Node<Model>? fatherLocal = findFather(father, name);
+      Node<Model>? fatherLocal = findFatherSearch(father, name);
       if (fatherLocal == null) {
         return father;
       } else {
-        var aux = findFather(fatherLocal, name);
+        var aux = findFatherSearch(fatherLocal, name);
+        if (aux != null) {
+          return aux;
+        } else {
+          return fatherLocal;
+        }
+      }
+    }
+    if (nodeSon.data.locationId != null) {
+      var locationFather = nodeIdMap[nodeSon.data.locationId];
+      locationFather!.children.clear();
+      locationFather.children.add(nodeSon);
+
+      return locationFather;
+    }
+    return null;
+  }
+  Node<Model>? findFatherfilter(Node<Model> nodeSon, String status) {
+    if (nodeSon.data.parentId != null) {
+      Node<Model>? father = nodeIdMap[nodeSon.data.parentId];
+      compareAndRemoveFilter(father!, status);
+      while (father!.data.parentId != null) {
+        var aux = father;
+        father = nodeIdMap[father.data.parentId]!;
+        father.children.clear();
+        father.children.add(aux);
+      }
+      Node<Model>? fatherLocal = findFatherfilter(father, status);
+      if (fatherLocal == null) {
+        return father;
+      } else {
+        var aux = findFatherfilter(fatherLocal, status);
         if (aux != null) {
           return aux;
         } else {
@@ -257,7 +305,7 @@ class AssetsController extends ChangeNotifier {
     return null;
   }
 
-  compareAndRemove(Node<Model> node, String name) {
+  compareAndRemoveSearch(Node<Model> node, String name) {
     print(
         "Nó que vai ser comparado: ${node.data.name} Filhos: ${node.children.length}");
 
@@ -267,25 +315,16 @@ class AssetsController extends ChangeNotifier {
       }
     }
   }
+  compareAndRemoveFilter(Node<Model> node, String status) {
+    print(
+        "Nó que vai ser comparado: ${node.data.name} Filhos: ${node.children.length}");
 
-  searchNode(String nodeName) {
-    List<Node<Model>> path = [];
-
-    bool findPathRecursive(Node<Model> node) {
-      path.add(node);
-      if (node.data.name == nodeName) {
-        return true;
+    for (var i = node.children.length; i > node.children.length + 1; i--) {
+      Node<AssetModel> childNode = node.children[i] as Node<AssetModel>;
+      
+      if (childNode.data.status == status) {
+        node.children.remove(node.children[i]);
       }
-      for (var child in node.children) {
-        if (findPathRecursive(child)) {
-          return true;
-        }
-      }
-      path.removeLast();
-      return false;
     }
-
-    findPathRecursive(root);
-    return path;
   }
 }

@@ -15,7 +15,7 @@ class AssetsPage extends StatefulWidget {
 }
 
 class _AssetsPageState extends State<AssetsPage> {
-  final controller = getIt<AssetsController>();
+  final controller = AssetsController();
   @override
   void initState() {
     controller.fetchAll(widget.companie);
@@ -156,7 +156,7 @@ class _AssetsPageState extends State<AssetsPage> {
                       fontSize: 14,
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: ()=> controller.filterNodes("operating"),
                 ),
               ),
               const SizedBox(
@@ -178,7 +178,7 @@ class _AssetsPageState extends State<AssetsPage> {
                     style: TextStyle(
                         color: Color(0xFF77818C), fontFamily: 'Roboto'),
                   ),
-                  onPressed: () {},
+                  onPressed: ()=> controller.filterNodes("alert"),
                 ),
               )
             ],

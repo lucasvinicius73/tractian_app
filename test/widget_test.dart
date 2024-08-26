@@ -9,8 +9,9 @@ void main() async {
   final controller = getIt<AssetsController>();
 
   await controller.getCompanies();
-  //await controller.fetchAll(controller.companies[1]);
+  await controller.fetchAll(controller.companies[1]);
   //controller.searchItemNode("Disk Mill");
+  controller.filterNodes("alert");
 
   similar() {
     return "Milling"
