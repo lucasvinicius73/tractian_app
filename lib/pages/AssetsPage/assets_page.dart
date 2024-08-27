@@ -83,6 +83,18 @@ class _AssetsPageState extends State<AssetsPage> {
               backgroundColor: const Color(0xFF17192D),
               centerTitle: true,
             ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+            floatingActionButton: FloatingActionButton(
+              backgroundColor: Colors.blue,
+              onPressed: () {
+                setState(() {
+                  critic = false;
+                  operating = false;
+                });
+                controller.disposeSearch();
+              },
+              child: const Icon(Icons.restart_alt),
+            ),
             body: SingleChildScrollView(child: body));
       },
     );
@@ -227,42 +239,6 @@ class _AssetsPageState extends State<AssetsPage> {
                     if (critic == false) {
                       controller.disposeSearch();
                     }
-                  },
-                ),
-              ),
-              const SizedBox(
-                width: 8,
-              ),
-              SizedBox(
-                width: 106,
-                height: 32,
-                child: OutlinedButton.icon(
-                  style: ButtonStyle(
-                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(3))),
-                    side: MaterialStatePropertyAll(BorderSide(
-                        color: critic == true
-                            ? Colors.blue
-                            : const Color(0xFF77818C))),
-                  ),
-                  icon: const Icon(
-                    Icons.restore,
-                    color: Color(0xFF77818C),
-                    size: 20,
-                  ),
-                  label: const Text(
-                    "Reset",
-                    style: TextStyle(
-                        color: Color(0xFF77818C), fontFamily: 'Roboto'),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      critic = false;
-                      operating = false;
-                    });
-                    controller.fetchAll(widget.companie);
-
-                    controller.disposeSearch();
                   },
                 ),
               ),

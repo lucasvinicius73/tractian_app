@@ -65,7 +65,13 @@ class _TreeWidgetState extends State<TreeWidget> {
                 icon,
                 scale: 1.7,
               ),
-              Text('${widget.node.data}'),
+              SizedBox(
+                width: 232,
+                child: Text(
+                  '${widget.node.data}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.only(left: 8),
                 child: status ?? const SizedBox(),

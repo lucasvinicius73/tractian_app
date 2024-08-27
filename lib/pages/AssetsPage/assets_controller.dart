@@ -45,7 +45,7 @@ class AssetsController extends ChangeNotifier {
   }
 
   fetchAll(Companie companie) async {
-    disposer();
+    await disposer();
     root = Node(Model(id: 'id', name: companie.name));
     await getLocations(companie);
     await getAssets(companie.id);
