@@ -22,6 +22,9 @@ class _AssetsPageState extends State<AssetsPage> {
     super.initState();
   }
 
+  bool critic = false;
+  bool operating = false;
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -97,7 +100,7 @@ class _AssetsPageState extends State<AssetsPage> {
             child: TextFormField(
               //onChanged: (value) {},
               onFieldSubmitted: (value) {
-              controller.searchItemNode(value);
+                controller.searchItemNode(value);
               },
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.only(
@@ -143,20 +146,43 @@ class _AssetsPageState extends State<AssetsPage> {
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
-                    side: const MaterialStatePropertyAll(
-                        BorderSide(color: Color(0xFF77818C))),
+                    side: MaterialStatePropertyAll(BorderSide(
+                        color: operating == true
+                            ? Colors.blue
+                            : const Color(0xFF77818C))),
                   ),
-                  icon: Image.asset("assets/icons/energyIcon.png"),
-                  label: const Text(
+                  icon: Image.asset(
+                    "assets/icons/energyIcon.png",
+                    color: operating == true
+                        ? Colors.blue
+                        : const Color(0xFF77818C),
+                  ),
+                  label: Text(
                     "Sensor de Energia",
                     maxLines: 1,
                     style: TextStyle(
-                      color: Color(0xFF77818C),
+                      color: operating == true
+                          ? Colors.blue
+                          : const Color(0xFF77818C),
                       fontFamily: 'Roboto',
                       fontSize: 14,
                     ),
                   ),
-                  onPressed: ()=> controller.filterNodes("operating"),
+                  onPressed: () {
+                    setState(() {
+                      operating = !operating;
+                      if (operating == true) {
+                        critic = false;
+                      }
+                    });
+                    if (operating == true) {
+                      controller.filterNodes("operating");
+                    }
+
+                    if (operating == false) {
+                      controller.disposeSearch();
+                    }
+                  },
                 ),
               ),
               const SizedBox(
@@ -169,18 +195,77 @@ class _AssetsPageState extends State<AssetsPage> {
                   style: ButtonStyle(
                     shape: MaterialStatePropertyAll(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(3))),
-                    side: const MaterialStatePropertyAll(
-                        BorderSide(color: Color(0xFF77818C))),
+                    side: MaterialStatePropertyAll(BorderSide(
+                        color: critic == true
+                            ? Colors.blue
+                            : const Color(0xFF77818C))),
                   ),
-                  icon: Image.asset("assets/icons/criticalIcon.png"),
-                  label: const Text(
+                  icon: Image.asset(
+                    "assets/icons/criticalIcon.png",
+                    color:
+                        critic == true ? Colors.blue : const Color(0xFF77818C),
+                  ),
+                  label: Text(
                     "Critico",
+                    style: TextStyle(
+                        color: critic == true
+                            ? Colors.blue
+                            : const Color(0xFF77818C),
+                        fontFamily: 'Roboto'),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      critic = !critic;
+                      if (critic == true) {
+                        operating = false;
+                      }
+                    });
+                    if (critic == true) {
+                      controller.filterNodes("alert");
+                    }
+
+                    if (critic == false) {
+                      controller.disposeSearch();
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(
+                width: 8,
+              ),
+              SizedBox(
+                width: 106,
+                height: 32,
+                child: OutlinedButton.icon(
+                  style: ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3))),
+                    side: MaterialStatePropertyAll(BorderSide(
+                        color: critic == true
+                            ? Colors.blue
+                            : const Color(0xFF77818C))),
+                  ),
+                  icon: const Icon(
+                    Icons.restore,
+                    color: Color(0xFF77818C),
+                    size: 20,
+                  ),
+                  label: const Text(
+                    "Reset",
                     style: TextStyle(
                         color: Color(0xFF77818C), fontFamily: 'Roboto'),
                   ),
-                  onPressed: ()=> controller.filterNodes("alert"),
+                  onPressed: () {
+                    setState(() {
+                      critic = false;
+                      operating = false;
+                    });
+                    controller.fetchAll(widget.companie);
+
+                    controller.disposeSearch();
+                  },
                 ),
-              )
+              ),
             ],
           )
         ],

@@ -5,30 +5,36 @@ import 'package:tractian_app/models/asset_model.dart';
 import 'package:tractian_app/models/location_model.dart';
 import 'package:tractian_app/models/node_model.dart';
 
-class TreeWidget extends StatelessWidget {
+class TreeWidget extends StatefulWidget {
   final Node node;
-  //final Node? son;
   const TreeWidget({super.key, required this.node});
 
   @override
+  State<TreeWidget> createState() => _TreeWidgetState();
+}
+
+class _TreeWidgetState extends State<TreeWidget> {
+  bool drop = false;
+
+  @override
   Widget build(BuildContext context) {
-    print("Nó ${node.data} tem ${node.children.length} filhos");
+    print("Nó ${widget.node.data} tem ${widget.node.children.length} filhos");
     String icon = 'assets/icons/criticalIcon.png';
     Icon? status;
-    if (node.data is LocationModel) {
+    if (widget.node.data is LocationModel) {
       icon = 'assets/icons/GoLocation.png';
-    } else if (node.data is AssetModel) {
+    } else if (widget.node.data is AssetModel) {
       icon = 'assets/icons/asset.png';
-      if (node.data.sensorType != null) {
+      if (widget.node.data.sensorType != null) {
         icon = "assets/icons/component.png";
-        if (node.data.status == "operating") {
+        if (widget.node.data.status == "operating") {
           status = const Icon(
             Icons.bolt,
             color: Colors.green,
             size: 20,
           );
         }
-        if (node.data.status == "alert") {
+        if (widget.node.data.status == "alert") {
           status = const Icon(
             Icons.circle,
             color: Colors.red,
@@ -40,23 +46,37 @@ class TreeWidget extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Image.asset(
-              icon,
-              scale: 1.7,
-            ),
-            Text('${node.data}'),
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: status ?? const SizedBox(),
-            )
-          ],
+        InkWell(
+          onTap: () {
+            setState(() {
+              drop = !drop;
+            });
+          },
+          child: Row(
+            children: [
+              widget.node.children.isNotEmpty
+                  ? Icon(drop == true
+                      ? Icons.arrow_drop_down
+                      : Icons.arrow_drop_up)
+                  : const SizedBox(
+                      width: 23,
+                    ),
+              Image.asset(
+                icon,
+                scale: 1.7,
+              ),
+              Text('${widget.node.data}'),
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: status ?? const SizedBox(),
+              )
+            ],
+          ),
         ),
         const SizedBox(
           height: 5,
         ),
-        node.children.isNotEmpty
+        widget.node.children.isNotEmpty && drop == true
             ? Flexible(
                 fit: FlexFit.loose,
                 child: Padding(
@@ -64,9 +84,9 @@ class TreeWidget extends StatelessWidget {
                   child: SuperListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: node.children.length,
+                    itemCount: widget.node.children.length,
                     itemBuilder: (context, index) =>
-                        TreeWidget(node: node.children[index]),
+                        TreeWidget(node: widget.node.children[index]),
                   ),
                 ),
               )

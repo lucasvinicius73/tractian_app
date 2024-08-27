@@ -216,13 +216,18 @@ class AssetsController extends ChangeNotifier {
     notifyListeners();
   }
 
+  disposeSearch() {
+    searchResult.clear();
+    notifyListeners();
+  }
+
   searchItemNode(String name) {
     searchResult.clear();
     List<Node<Model>> searchResultAux = [];
     searchResultAux = nodeIdMap.values
         .where((element) =>
             element.data.name.toLowerCase().similarityTo(name.toLowerCase()) >
-            0.45)
+            0.40)
         .toList();
 
     searchResultAux.forEach((element) =>
@@ -273,6 +278,7 @@ class AssetsController extends ChangeNotifier {
     }
     return null;
   }
+
   Node<Model>? findFatherfilter(Node<Model> nodeSon, String status) {
     if (nodeSon.data.parentId != null) {
       Node<Model>? father = nodeIdMap[nodeSon.data.parentId];
@@ -310,18 +316,19 @@ class AssetsController extends ChangeNotifier {
         "Nó que vai ser comparado: ${node.data.name} Filhos: ${node.children.length}");
 
     for (var i = node.children.length; i > node.children.length + 1; i--) {
-      if (node.children[i].data.name.similarityTo(name) < 0.45) {
+      if (node.children[i].data.name.similarityTo(name) < 0.40) {
         node.children.remove(node.children[i]);
       }
     }
   }
+
   compareAndRemoveFilter(Node<Model> node, String status) {
     print(
         "Nó que vai ser comparado: ${node.data.name} Filhos: ${node.children.length}");
 
     for (var i = node.children.length; i > node.children.length + 1; i--) {
       Node<AssetModel> childNode = node.children[i] as Node<AssetModel>;
-      
+
       if (childNode.data.status == status) {
         node.children.remove(node.children[i]);
       }
