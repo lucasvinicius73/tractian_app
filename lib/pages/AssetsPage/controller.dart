@@ -12,9 +12,8 @@ class AssetsController2 extends ChangeNotifier {
   List<AssetModel> assets = [];
   Map<String, Node> nodeIdMap = {};
   final service = ServiceJson();
-  Map<String, Node<Model>> searchResult = {};
-
   Node<Model> root = Node(Model(id: "", name: ""));
+  Node<Model> searchResult = Node(Model(id: "", name: "Search"));
 
   getCompanies() async {
     companies = await service.fetchCompaniesJson();
@@ -93,8 +92,13 @@ class AssetsController2 extends ChangeNotifier {
     notifyListeners();
   }
 
+  disposeSearch() {
+    searchResult.children.clear();
+    notifyListeners();
+  }
+
   filterStatusNodes(String status) {
-    searchResult.clear();
+    searchResult.children.clear();
     Map<String, Model> aux = {};
     for (var asset in assets) {
       if (asset.status == status) {
@@ -106,16 +110,60 @@ class AssetsController2 extends ChangeNotifier {
       }
     }
     for (var element in aux.values) {
-      Node<Model>? father = nodeIdMap[element.parentId]! as Node<Model>?;
+      Node<Model> son = Node(element);
+      Node<Model>? father = findFatherAndRemoveBrothers(son, status);
+      if (father != null) {
+        searchResult.children.add(father);
+      }
     }
 
-    print("Filtro encontrado com ${searchResult.length} itens");
+    print("Filtro encontrado com ${searchResult.children.length} itens");
     notifyListeners();
   }
 
-  findFatherAndRemoveBrothers(Node<Model> nodeSon) {
+  Node<Model>? findFatherAndRemoveBrothers(Node<Model> nodeSon, String status) {
     if (nodeSon.data.parentId != null) {
       Node<Model>? father = nodeIdMap[nodeSon.data.parentId] as Node<Model>?;
+      compareAndRemoveFilter(father!, status);
+
+      while (father!.data.parentId != null) {
+        var aux = father;
+        father = nodeIdMap[father.data.parentId]! as Node<Model>?;
+        father!.children.clear();
+        father.children.add(aux);
+      }
+      Node<Model>? fatherLocal = findFatherAndRemoveBrothers(father, status);
+      if (fatherLocal == null) {
+        return father;
+      } else {
+        var aux = findFatherAndRemoveBrothers(fatherLocal, status);
+        if (aux != null) {
+          return aux;
+        } else {
+          return fatherLocal;
+        }
+      }
+    }
+    if (nodeSon.data.locationId != null) {
+      var locationFather = nodeIdMap[nodeSon.data.locationId];
+      locationFather!.children.clear();
+      locationFather.children.add(nodeSon);
+
+      return locationFather as Node<Model>?;
+    }
+    return null;
+  }
+
+  compareAndRemoveFilter(Node<Model> node, String status) {
+    print(
+        "Nó que vai ser comparado: ${node.data.name} Filhos: ${node.children.length}");
+
+    for (var i = node.children.length; i > node.children.length + 1; i--) {
+      Node<AssetModel> childNode = node.children[i] as Node<AssetModel>;
+
+      if (childNode.data.status == status) {
+        node.children.remove(node.children[i]);
+      }
     }
   }
 }

@@ -34,7 +34,7 @@ class _AssetsPageState extends State<AssetsPage> {
       builder: (context, child) {
         Widget body = Container();
 
-        if (controller2.searchResult.isEmpty &&
+        if (controller2.searchResult.children.isEmpty &&
             controller2.root.children.isNotEmpty) {
           body = Column(
             mainAxisSize: MainAxisSize.min,
@@ -49,9 +49,7 @@ class _AssetsPageState extends State<AssetsPage> {
             ],
           );
         }
-        if (controller2.searchResult.isNotEmpty) {
-          Node<Model> searchNode = Node(Model(id: "", name: "Search"));
-          searchNode.children.addAll(controller2.searchResult.values);
+        if (controller2.searchResult.children.isNotEmpty) {
           body = Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -60,7 +58,7 @@ class _AssetsPageState extends State<AssetsPage> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: buildTree(searchNode),
+                child: buildTree(controller2.searchResult),
               )
             ],
           );
@@ -93,7 +91,7 @@ class _AssetsPageState extends State<AssetsPage> {
                   critic = false;
                   operating = false;
                 });
-                controller.disposeSearch();
+                controller2.disposeSearch();
               },
               child: const Icon(Icons.restart_alt),
             ),
@@ -194,7 +192,7 @@ class _AssetsPageState extends State<AssetsPage> {
                     }
 
                     if (operating == false) {
-                      controller.disposeSearch();
+                      controller2.disposeSearch();
                     }
                   },
                 ),
@@ -239,7 +237,7 @@ class _AssetsPageState extends State<AssetsPage> {
                     }
 
                     if (critic == false) {
-                      controller.disposeSearch();
+                      controller2.disposeSearch();
                     }
                   },
                 ),
