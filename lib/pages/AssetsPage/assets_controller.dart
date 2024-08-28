@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tractian_app/models/asset_model.dart';
 import 'package:tractian_app/models/companie_model.dart';
-import 'package:tractian_app/models/location_model.dart';
 import 'package:tractian_app/models/model.dart';
 import 'package:tractian_app/models/node_model.dart';
 import 'package:tractian_app/shared/service.dart';

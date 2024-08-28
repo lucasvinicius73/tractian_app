@@ -18,7 +18,7 @@ class _TreeWidgetState extends State<TreeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print("Nó ${widget.node.data} tem ${widget.node.children.length} filhos");
+   // print("Nó ${widget.node.data} tem ${widget.node.children.length} filhos");
     String icon = 'assets/icons/criticalIcon.png';
     Icon? status;
     if (widget.node.data is LocationModel) {

@@ -3,6 +3,7 @@ import 'package:tractian_app/models/companie_model.dart';
 import 'package:tractian_app/models/model.dart';
 import 'package:tractian_app/models/node_model.dart';
 import 'package:tractian_app/pages/AssetsPage/assets_controller.dart';
+import 'package:tractian_app/pages/AssetsPage/controller.dart';
 import 'package:tractian_app/provider.dart';
 import 'package:tractian_app/widgets/tree_widget.dart';
 
@@ -16,9 +17,10 @@ class AssetsPage extends StatefulWidget {
 
 class _AssetsPageState extends State<AssetsPage> {
   final controller = AssetsController();
+  final controller2 = AssetsController2();
   @override
   void initState() {
-    controller.fetchAll(widget.companie);
+    controller2.fetchAll(widget.companie);
     super.initState();
   }
 
@@ -28,12 +30,12 @@ class _AssetsPageState extends State<AssetsPage> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: controller,
+      listenable: controller2,
       builder: (context, child) {
         Widget body = Container();
 
-        if (controller.searchResult.isEmpty &&
-            controller.root.children.isNotEmpty) {
+        if (controller2.searchResult.isEmpty &&
+            controller2.root.children.isNotEmpty) {
           body = Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -42,14 +44,14 @@ class _AssetsPageState extends State<AssetsPage> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: buildTree(controller.root),
+                child: buildTree(controller2.root),
               )
             ],
           );
         }
-        if (controller.searchResult.isNotEmpty) {
+        if (controller2.searchResult.isNotEmpty) {
           Node<Model> searchNode = Node(Model(id: "", name: "Search"));
-          searchNode.children.addAll(controller.searchResult.values);
+          searchNode.children.addAll(controller2.searchResult.values);
           body = Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -64,7 +66,7 @@ class _AssetsPageState extends State<AssetsPage> {
           );
         }
 
-        if (controller.root.children.isEmpty) {
+        if (controller2.root.children.isEmpty) {
           body = Padding(
             padding:
                 EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.38),
@@ -188,7 +190,7 @@ class _AssetsPageState extends State<AssetsPage> {
                       }
                     });
                     if (operating == true) {
-                      controller.filterNodes("operating");
+                      controller2.filterStatusNodes("operating");
                     }
 
                     if (operating == false) {
@@ -233,7 +235,7 @@ class _AssetsPageState extends State<AssetsPage> {
                       }
                     });
                     if (critic == true) {
-                      controller.filterNodes("alert");
+                      controller2.filterStatusNodes("alert");
                     }
 
                     if (critic == false) {
