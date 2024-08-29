@@ -1,36 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:string_similarity/string_similarity.dart';
 import 'package:tractian_app/models/asset_model.dart';
 import 'package:tractian_app/models/companie_model.dart';
+import 'package:tractian_app/models/location_model.dart';
 import 'package:tractian_app/models/model.dart';
 import 'package:tractian_app/models/node_model.dart';
 import 'package:tractian_app/shared/service.dart';
-import 'package:string_similarity/string_similarity.dart';
 
 class AssetsController extends ChangeNotifier {
   List<Companie> companies = [];
-  List<Model> locations = [];
+  List<LocationModel> locations = [];
   List<AssetModel> assets = [];
-  List<Node<Model>> roots = [];
-  List<Node<Model>> subLocations = [];
-  Node<Model> root = Node<Model>(Model(id: "id", name: "name"));
-  final Map<String, Node<Model>> nodeIdMap = {};
-  Map<String, Node<Model>> searchResult = {};
-
+  Map<String, Node> nodeIdMap = {};
   final service = ServiceJson();
+  Node<Model> root = Node(Model(id: "", name: ""));
+  Node<Model> searchResult = Node(Model(id: "", name: "Search"));
 
   getCompanies() async {
     companies = await service.fetchCompaniesJson();
     notifyListeners();
-  }
-
-  disposer() {
-    root.children.clear();
-    locations.clear();
-    roots.clear();
-    subLocations.clear();
-    assets.clear();
-    searchResult.clear();
-    //notifyListeners();
   }
 
   getLocations(Companie companie) async {
@@ -38,260 +26,119 @@ class AssetsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  getAssets(String companieID) async {
-    assets = await service.fetchAssetsJson(companieID);
+  getAssets(Companie companie) async {
+    assets = await service.fetchAssetsJson(companie.id);
     notifyListeners();
   }
 
   fetchAll(Companie companie) async {
-    await disposer();
-    root = Node(Model(id: 'id', name: companie.name));
+    root.children.clear();
+    disposeSearch();
     await getLocations(companie);
-    await getAssets(companie.id);
-    await buildTree(companie);
+    await getAssets(companie);
+    await createHashTable();
+    await buildNodes();
+    await buildRoot(companie);
   }
 
-  buildTree(Companie companie) async {
-    await buildLocationsRoots(companie);
-    await buildSubLocationsNode();
-    await buildAssetsNodes();
-    notifyListeners();
-  }
-
-  buildLocationsRoots(Companie companie) {
+  createHashTable() {
     for (var location in locations) {
-      final Node<Model> node = Node(location);
+      Node<Model> locationNode = Node(location);
+      nodeIdMap[locationNode.data.id] = locationNode;
+    }
+    for (var asset in assets) {
+      Node<AssetModel> assetNode = Node(asset);
+      nodeIdMap[assetNode.data.id] = assetNode;
+    }
+  }
 
+  buildNodes() {
+    for (var node in nodeIdMap.values) {
+      if (node is! Node<AssetModel>) {
+        if (node.data.parentId != null) {
+          nodeIdMap[node.data.parentId!]!.children.add(node);
+        }
+      }
+      if (node is Node<AssetModel>) {
+        if (node.data.parentId == null && node.data.locationId == null) {
+          root.children.add(node);
+        }
+
+        if (node.data.parentId != null) {
+          nodeIdMap[node.data.parentId!]!.children.add(node);
+        } else if (node.data.locationId != null) {
+          Node<Model> father = nodeIdMap[node.data.locationId!]! as Node<Model>;
+          father.children.add(node);
+        }
+      }
+    }
+    notifyListeners();
+  }
+
+  buildRoot(Companie companie) {
+    root.data.name = "Companie ${companie.name}";
+    int i = -1;
+    for (var location in locations) {
       if (location.parentId == null) {
-        roots.add(node);
-      }
-      if (location.parentId != null) {
-        subLocations.add(node);
-      }
-    }
-    root.children.addAll(roots);
-    //notifyListeners();
-  }
-
-  buildSubLocationsNode() {
-    for (var node in root.children) {
-      nodeIdMap[node.data.id] = node;
-      _fillNodeMap(nodeIdMap, node);
-    }
-    for (var subLocation in subLocations) {
-      nodeIdMap[subLocation.data.id] = subLocation;
-      _fillNodeMap(nodeIdMap, subLocation);
-    }
-
-    for (var subLocation in subLocations) {
-      final parentId = subLocation.data.parentId!;
-      final node = nodeIdMap[parentId];
-      if (node != null) {
-        node.children.add(nodeIdMap[subLocation.data.id]!);
-      }
-    }
-  }
-
-  buildAssetsNodes() {
-    final Map<String, Node<Model>> fatherAsset = {};
-    final List<Node<Model>> component = [];
-
-    for (int i = 0; i < assets.length + 1;) {
-      //Ao chegar ao final do Laço ele vai acionar a função de adicionar os componentes que não encontraram o Pai
-      if (i == assets.length) {
-        insertComponents(fatherAsset, component);
-        break;
-      }
-      final asset = assets[i];
-      print(
-          "O Item ${assets[i]} indice $i entrou na filtragem de ${assets.length} itens");
-      if (asset.locationId == null && asset.parentId == null) {
-        //Verifica se o Asset não esta associado a um Local e se não tem ParentID
-        print("Asset que foi pra raiz: ${asset.name}");
-        nodeIdMap[asset.id] = Node<AssetModel>(asset);
-        root.children.add(nodeIdMap[asset.id]!);
-
-        assets.removeAt(i);
-      } else if (asset.locationId != null && asset.sensorId == null) {
-        //Se não, verifica se tem um local como Pai
-        final locationNode = nodeIdMap[asset.locationId!];
-        if (locationNode != null) {
-          print(
-              "O Asset ${asset.name} é filho do Local ${locationNode.data.name}");
-          locationNode.children.add(Node<AssetModel>(asset));
-          fatherAsset[asset.id] = locationNode.children
-              .where((element) => element.data.id == asset.id)
-              .first;
-
-          nodeIdMap[asset.id] = fatherAsset[asset.id]!;
-          assets.removeAt(i);
+        i++;
+        Node<Model> locationModel = nodeIdMap[location.id]! as Node<Model>;
+        if (locationModel.children.isNotEmpty) {
+          root.children.insert(0, locationModel);
         } else {
-          //Se ele não encontrar o Local pai vai pular a ordem do Loop para o proximo
-          i++;
-        }
-      } else {
-        //Se ele não possuir um local ou SubLocal como pai, significa que é filho de outro Asset
-        final String? parentId = asset.parentId;
-        final parentNode = nodeIdMap[parentId];
-        if (parentNode != null) {
-          print(
-              "O Asset ${asset.name} é filho do Asset ${parentNode.data.name}");
-          fatherAsset[asset.id] = Node<AssetModel>(asset);
-          nodeIdMap[asset.id] = fatherAsset[asset.id]!;
-          parentNode.children.add(nodeIdMap[asset.id]!);
-          assets.removeAt(i);
-        } else {
-          //Se não encontrar o Asset pai
-          if (asset.locationId != null) {
-            //Verifica se ele não pertence a um local
-            final locationNode = nodeIdMap[asset.locationId!];
-            if (locationNode != null) {
-              nodeIdMap[asset.id] = Node<AssetModel>(asset);
-              locationNode.children.add(nodeIdMap[asset.id]!);
-              assets.removeAt(i);
-            } else if (locationNode != null) {
-              assets.removeAt(i);
-              i++;
-            }
-          } else {
-            //Se não tiver um localID ele vai para a lista de Componentes esperar encontrar o Componente Pai
-            print("O componente ${asset.name} foi pra lista de componentes");
-            nodeIdMap[asset.id] = Node<AssetModel>(asset);
-            component.add(nodeIdMap[asset.id]!);
-            i++;
-          }
+          root.children.insert(i, locationModel);
         }
       }
     }
 
-    notifyListeners();
-  }
-
-  insertComponents(
-      Map<String, Node<Model>> fatherAssets, List<Node<Model>> components) {
-    for (var component in components) {
-      print("Componente: ${component.data.name}");
-      final String? parentId = component.data.parentId;
-      final parentNode = fatherAssets[parentId];
-      if (parentNode != null) {
-        print(
-            "O Componente ${component.data.name} é filho do Asset ${parentNode.data.name}");
-        parentNode.children.add(component);
-      }
-    }
-    notifyListeners();
-  }
-
-  void _fillNodeMap(Map<String, Node<Model>> map, Node<Model> node) {
-    for (var child in node.children) {
-      map[child.data.id] = child;
-      _fillNodeMap(map, child);
-    }
-  }
-
-  filterNodes(String status) {
-    searchResult.clear();
-    notifyListeners();
-
-    List<Node<Model>> filterResultAux = [];
-    filterResultAux = nodeIdMap.values.where((element) {
-      if (element is Node<AssetModel>) {
-        if (element.data.status == status) {
-          return true;
-        }
-        return false;
-      }
-      return false;
-    }).toList();
-
-    for (var search in filterResultAux) {
-      Node<Model>? father = findFatherfilter(search, status);
-      if (father != null) {
-        searchResult[father.data.id] = father;
-      } else if (father == null) {
-        searchResult[search.data.id] = search;
-      }
-    }
     notifyListeners();
   }
 
   disposeSearch() {
-    searchResult.clear();
+    searchResult.children.clear();
     notifyListeners();
   }
 
-  searchItemNode(String name) {
-    searchResult.clear();
-    List<Node<Model>> searchResultAux = [];
-    searchResultAux = nodeIdMap.values
-        .where((element) =>
-            element.data.name.toLowerCase().similarityTo(name.toLowerCase()) >
-            0.40)
-        .toList();
-
-    searchResultAux.forEach((element) =>
-        print("Item encontrado antes de Filtrar: ${element.data.name}"));
-
-    for (var search in searchResultAux) {
-      Node<Model>? father = findFatherSearch(search, name);
-      if (father != null) {
-        searchResult[father.data.id] = father;
-      } else if (father == null) {
-        searchResult[search.data.id] = search;
-      }
-    }
-    print("A busca encontrou ${searchResult.length} itens");
-
-    searchResult.forEach((key, value) {
-      print("Iten Encontrado: ${value.data.name} Tipo: ${value}");
-    });
-    notifyListeners();
-  }
-
-  Node<Model>? findFatherSearch(Node<Model> nodeSon, String name) {
-    if (nodeSon.data.parentId != null) {
-      Node<Model>? father = nodeIdMap[nodeSon.data.parentId];
-      compareAndRemoveSearch(father!, name);
-      while (father!.data.parentId != null) {
-        father = nodeIdMap[father.data.parentId]!;
-      }
-      Node<Model>? fatherLocal = findFatherSearch(father, name);
-      if (fatherLocal == null) {
-        return father;
-      } else {
-        var aux = findFatherSearch(fatherLocal, name);
-        if (aux != null) {
-          return aux;
-        } else {
-          return fatherLocal;
+  filterStatusNodes(String status) {
+    searchResult.children.clear();
+    Map<String, Model> aux = {};
+    for (var asset in assets) {
+      if (asset.status == status) {
+        if (asset.parentId != null) {
+          aux[asset.parentId!] = asset;
+        } else if (asset.locationId != null) {
+          aux[asset.locationId!] = asset;
         }
       }
     }
-    if (nodeSon.data.locationId != null) {
-      var locationFather = nodeIdMap[nodeSon.data.locationId];
-      locationFather!.children.clear();
-      locationFather.children.add(nodeSon);
-
-      return locationFather;
+    for (var element in aux.values) {
+      Node<Model> son = Node(element);
+      Node<Model>? father = findFatherAndRemoveBrothersFilter(son, status);
+      if (father != null) {
+        searchResult.children.add(father);
+      }
     }
-    return null;
+
+    notifyListeners();
   }
 
-  Node<Model>? findFatherfilter(Node<Model> nodeSon, String status) {
+  Node<Model>? findFatherAndRemoveBrothersFilter(
+      Node<Model> nodeSon, String status) {
     if (nodeSon.data.parentId != null) {
-      Node<Model>? father = nodeIdMap[nodeSon.data.parentId];
+      Node<Model>? father = nodeIdMap[nodeSon.data.parentId] as Node<Model>?;
       compareAndRemoveFilter(father!, status);
+
       while (father!.data.parentId != null) {
         var aux = father;
-        father = nodeIdMap[father.data.parentId]!;
-        father.children.clear();
+        father = nodeIdMap[father.data.parentId]! as Node<Model>?;
+        father!.children.clear();
         father.children.add(aux);
       }
-      Node<Model>? fatherLocal = findFatherfilter(father, status);
+      Node<Model>? fatherLocal =
+          findFatherAndRemoveBrothersFilter(father, status);
       if (fatherLocal == null) {
         return father;
       } else {
-        var aux = findFatherfilter(fatherLocal, status);
+        var aux = findFatherAndRemoveBrothersFilter(fatherLocal, status);
         if (aux != null) {
           return aux;
         } else {
@@ -304,26 +151,12 @@ class AssetsController extends ChangeNotifier {
       locationFather!.children.clear();
       locationFather.children.add(nodeSon);
 
-      return locationFather;
+      return locationFather as Node<Model>?;
     }
     return null;
-  }
-
-  compareAndRemoveSearch(Node<Model> node, String name) {
-    print(
-        "Nó que vai ser comparado: ${node.data.name} Filhos: ${node.children.length}");
-
-    for (var i = node.children.length; i > node.children.length + 1; i--) {
-      if (node.children[i].data.name.similarityTo(name) < 0.40) {
-        node.children.remove(node.children[i]);
-      }
-    }
   }
 
   compareAndRemoveFilter(Node<Model> node, String status) {
-    print(
-        "Nó que vai ser comparado: ${node.data.name} Filhos: ${node.children.length}");
-
     for (var i = node.children.length; i > node.children.length + 1; i--) {
       Node<AssetModel> childNode = node.children[i] as Node<AssetModel>;
 
@@ -331,5 +164,64 @@ class AssetsController extends ChangeNotifier {
         node.children.remove(node.children[i]);
       }
     }
+  }
+
+  searchItemNode(String name) {
+    disposeSearch();
+    Map<String, Node<Model>> aux = {};
+    for (var node in nodeIdMap.values) {
+      node as Node<Model>;
+      if (node.data.name.toLowerCase().similarityTo(name.toLowerCase()) >
+          0.30) {
+
+        if (node.data.parentId == null && node.data.locationId == null) {
+          aux[node.data.id] = node;
+        } else if (node.data.parentId != null) {
+          aux[node.data.parentId!] = node;
+        } else if (node.data.locationId != null) {
+          aux[node.data.locationId!] = node;
+        }
+      }
+    }
+    for (var nodeSon in aux.values) {
+      Node<Model>? father = findFatherAndRemoveBrothersSearch(nodeSon, name);
+      if (father != null) {
+        searchResult.children.add(father);
+      }
+    }
+    notifyListeners();
+  }
+
+  findFatherAndRemoveBrothersSearch(Node<Model> nodeSon, String name) {
+    if (nodeSon.data.parentId == null && nodeSon.data.locationId == null) {
+      return nodeSon;
+    }
+    if (nodeSon.data.parentId != null) {
+      Node<Model>? father = nodeIdMap[nodeSon.data.parentId] as Node<Model>?;
+      findFatherAndRemoveBrothersSearch(father!, name);
+      while (father!.data.parentId != null) {
+        father = nodeIdMap[father.data.parentId]! as Node<Model>?;
+      }
+      Node<Model>? fatherLocal =
+          findFatherAndRemoveBrothersSearch(father, name);
+      if (fatherLocal == null) {
+        return father;
+      } else {
+        var aux = findFatherAndRemoveBrothersSearch(fatherLocal, name);
+        if (aux != null) {
+          return aux;
+        } else {
+          return fatherLocal;
+        }
+      }
+    }
+    if (nodeSon.data.locationId != null) {
+      var locationFather = nodeIdMap[nodeSon.data.locationId];
+      locationFather!.children.clear();
+      locationFather.children.add(nodeSon);
+
+      return locationFather;
+    }
+    return null;
   }
 }

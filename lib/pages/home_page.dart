@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:tractian_app/models/companie_model.dart';
 import 'package:tractian_app/pages/AssetsPage/assets_controller.dart';
-import 'package:tractian_app/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,7 +10,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final controller = getIt<AssetsController>();
+  final controller = AssetsController();
   @override
   void initState() {
     controller.getCompanies();

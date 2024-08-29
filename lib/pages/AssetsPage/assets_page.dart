@@ -3,8 +3,6 @@ import 'package:tractian_app/models/companie_model.dart';
 import 'package:tractian_app/models/model.dart';
 import 'package:tractian_app/models/node_model.dart';
 import 'package:tractian_app/pages/AssetsPage/assets_controller.dart';
-import 'package:tractian_app/pages/AssetsPage/controller.dart';
-import 'package:tractian_app/provider.dart';
 import 'package:tractian_app/widgets/tree_widget.dart';
 
 class AssetsPage extends StatefulWidget {
@@ -17,10 +15,9 @@ class AssetsPage extends StatefulWidget {
 
 class _AssetsPageState extends State<AssetsPage> {
   final controller = AssetsController();
-  final controller2 = AssetsController2();
   @override
   void initState() {
-    controller2.fetchAll(widget.companie);
+    controller.fetchAll(widget.companie);
     super.initState();
   }
 
@@ -30,12 +27,12 @@ class _AssetsPageState extends State<AssetsPage> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: controller2,
+      listenable: controller,
       builder: (context, child) {
         Widget body = Container();
 
-        if (controller2.searchResult.children.isEmpty &&
-            controller2.root.children.isNotEmpty) {
+        if (controller.searchResult.children.isEmpty &&
+            controller.root.children.isNotEmpty) {
           body = Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -44,12 +41,12 @@ class _AssetsPageState extends State<AssetsPage> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: buildTree(controller2.root),
+                child: buildTree(controller.root),
               )
             ],
           );
         }
-        if (controller2.searchResult.children.isNotEmpty) {
+        if (controller.searchResult.children.isNotEmpty) {
           body = Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -58,13 +55,13 @@ class _AssetsPageState extends State<AssetsPage> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: buildTree(controller2.searchResult),
+                child: buildTree(controller.searchResult),
               )
             ],
           );
         }
 
-        if (controller2.root.children.isEmpty) {
+        if (controller.root.children.isEmpty) {
           body = Padding(
             padding:
                 EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.38),
@@ -91,7 +88,7 @@ class _AssetsPageState extends State<AssetsPage> {
                   critic = false;
                   operating = false;
                 });
-                controller2.fetchAll(widget.companie);
+                controller.fetchAll(widget.companie);
               },
               child: const Icon(Icons.restart_alt),
             ),
@@ -112,7 +109,7 @@ class _AssetsPageState extends State<AssetsPage> {
             child: TextFormField(
               //onChanged: (value) {},
               onFieldSubmitted: (value) {
-                controller2.searchItemNode(value);
+                controller.searchItemNode(value);
               },
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.only(
@@ -188,11 +185,11 @@ class _AssetsPageState extends State<AssetsPage> {
                       }
                     });
                     if (operating == true) {
-                      controller2.filterStatusNodes("operating");
+                      controller.filterStatusNodes("operating");
                     }
 
                     if (operating == false) {
-                      controller2.disposeSearch();
+                      controller.disposeSearch();
                     }
                   },
                 ),
@@ -233,11 +230,11 @@ class _AssetsPageState extends State<AssetsPage> {
                       }
                     });
                     if (critic == true) {
-                      controller2.filterStatusNodes("alert");
+                      controller.filterStatusNodes("alert");
                     }
 
                     if (critic == false) {
-                      controller2.disposeSearch();
+                      controller.disposeSearch();
                     }
                   },
                 ),
