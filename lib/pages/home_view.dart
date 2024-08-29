@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:tractian_app/models/companie_model.dart';
 import 'package:tractian_app/pages/AssetsPage/assets_controller.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomeView extends StatefulWidget {
+  const HomeView({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomeViewState extends State<HomeView> {
   final controller = AssetsController();
   @override
   void initState() {

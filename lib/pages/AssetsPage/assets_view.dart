@@ -5,15 +5,15 @@ import 'package:tractian_app/models/node_model.dart';
 import 'package:tractian_app/pages/AssetsPage/assets_controller.dart';
 import 'package:tractian_app/widgets/tree_widget.dart';
 
-class AssetsPage extends StatefulWidget {
+class AssetsView extends StatefulWidget {
   final Companie companie;
-  const AssetsPage({super.key, required this.companie});
+  const AssetsView({super.key, required this.companie});
 
   @override
-  State<AssetsPage> createState() => _AssetsPageState();
+  State<AssetsView> createState() => _AssetsViewState();
 }
 
-class _AssetsPageState extends State<AssetsPage> {
+class _AssetsViewState extends State<AssetsView> {
   final controller = AssetsController();
   @override
   void initState() {

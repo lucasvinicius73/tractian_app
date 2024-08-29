@@ -1,16 +1,17 @@
-# tractian_app
+# Chalenge Tractian Mobile
+Challenge proposed by Tractian for the position of Mobile Software Engineer. The challenge consists of creating a Flutter application for managing and visualizing a company's assets.
 
-A new Flutter project.
+## Libraries used:
 
-## Getting Started
+[http: ^1.2.2](https://pub.dev/packages/http) 
+[string_similarity: ^2.1.1](https://pub.dev/packages/string_similarity)
+[super_sliver_list: ^0.4.1](https://pub.dev/packages/super_sliver_list)
 
-This project is a starting point for a Flutter application.
+## Project standard:
 
-A few resources to get you started if this is your first Flutter project:
+This project was built using the MVC(Model,View,Controller) format.
+The challenge API was consumed using the service format, where the information was handled using the Models built in the application.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+The logical part of the application was built in the Controller class, which received the data from the Service and built it in the format needed to send it to the View
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+In the View, the items were displayed in a tree format as described in the challenge, using recursion to assemble the items based on the number of children

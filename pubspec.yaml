@@ -14,8 +14,6 @@ dependencies:
 
   cupertino_icons: ^1.0.6
   http: ^1.2.2
-  provider: ^6.1.2
-  get_it: ^7.7.0
   super_sliver_list: ^0.4.1
   string_similarity: ^2.1.1
 
