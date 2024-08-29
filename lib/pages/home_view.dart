@@ -37,7 +37,7 @@ class _HomeViewState extends State<HomeView> {
             );
           }
           if (controller.companies.isEmpty) {
-            body = Center(child: CircularProgressIndicator());
+            body = const Center(child: CircularProgressIndicator());
           }
           return Scaffold(
               appBar: AppBar(

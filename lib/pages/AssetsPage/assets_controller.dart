@@ -16,6 +16,9 @@ class AssetsController extends ChangeNotifier {
   Node<Model> root = Node(Model(id: "", name: ""));
   Node<Model> searchResult = Node(Model(id: "", name: "Search"));
 
+  bool critic = false;
+  bool operating = false;
+
   getCompanies() async {
     companies = await service.fetchCompaniesJson();
     notifyListeners();
@@ -94,8 +97,36 @@ class AssetsController extends ChangeNotifier {
   }
 
   disposeSearch() {
+    critic = false;
+    operating = false;
     searchResult.children.clear();
     notifyListeners();
+  }
+
+  changeFilterState(String status) {
+    if (status == "operating") {
+      operating = !operating;
+      print("Status Operating : $operating");
+
+      if (operating == true) {
+        critic = false;
+        filterStatusNodes(status);
+      } else {
+        disposeSearch();
+      }
+      notifyListeners();
+    } else if (status == "alert") {
+      critic = !critic;
+      print("Status Critic: $critic");
+
+      if (critic == true) {
+        operating = false;
+        filterStatusNodes(status);
+      } else {
+        disposeSearch();
+      }
+      notifyListeners();
+    }
   }
 
   filterStatusNodes(String status) {
@@ -103,6 +134,9 @@ class AssetsController extends ChangeNotifier {
     Map<String, Model> aux = {};
     for (var asset in assets) {
       if (asset.status == status) {
+        if (asset.parentId == null && asset.locationId == null) {
+          aux[asset.id] = asset;
+        }
         if (asset.parentId != null) {
           aux[asset.parentId!] = asset;
         } else if (asset.locationId != null) {
@@ -123,6 +157,9 @@ class AssetsController extends ChangeNotifier {
 
   Node<Model>? findFatherAndRemoveBrothersFilter(
       Node<Model> nodeSon, String status) {
+    if (nodeSon.data.parentId == null && nodeSon.data.locationId == null) {
+      return nodeSon;
+    }
     if (nodeSon.data.parentId != null) {
       Node<Model>? father = nodeIdMap[nodeSon.data.parentId] as Node<Model>?;
       compareAndRemoveFilter(father!, status);
@@ -169,11 +206,11 @@ class AssetsController extends ChangeNotifier {
   searchItemNode(String name) {
     disposeSearch();
     Map<String, Node<Model>> aux = {};
+    Map<String, Node<Model>> resultAux = {};
     for (var node in nodeIdMap.values) {
       node as Node<Model>;
       if (node.data.name.toLowerCase().similarityTo(name.toLowerCase()) >
           0.30) {
-
         if (node.data.parentId == null && node.data.locationId == null) {
           aux[node.data.id] = node;
         } else if (node.data.parentId != null) {
@@ -186,9 +223,11 @@ class AssetsController extends ChangeNotifier {
     for (var nodeSon in aux.values) {
       Node<Model>? father = findFatherAndRemoveBrothersSearch(nodeSon, name);
       if (father != null) {
-        searchResult.children.add(father);
+        resultAux[father.data.id] = father;
       }
     }
+    searchResult.children.addAll(resultAux.values);
+
     notifyListeners();
   }
 

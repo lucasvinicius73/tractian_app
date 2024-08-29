@@ -21,9 +21,6 @@ class _AssetsViewState extends State<AssetsView> {
     super.initState();
   }
 
-  bool critic = false;
-  bool operating = false;
-
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -84,10 +81,6 @@ class _AssetsViewState extends State<AssetsView> {
             floatingActionButton: FloatingActionButton(
               backgroundColor: Colors.blue,
               onPressed: () {
-                setState(() {
-                  critic = false;
-                  operating = false;
-                });
                 controller.fetchAll(widget.companie);
               },
               child: const Icon(Icons.restart_alt),
@@ -107,7 +100,6 @@ class _AssetsViewState extends State<AssetsView> {
             width: 350,
             height: 40,
             child: TextFormField(
-              //onChanged: (value) {},
               onFieldSubmitted: (value) {
                 controller.searchItemNode(value);
               },
@@ -156,13 +148,13 @@ class _AssetsViewState extends State<AssetsView> {
                       ),
                     ),
                     side: MaterialStatePropertyAll(BorderSide(
-                        color: operating == true
+                        color: controller.operating == true
                             ? Colors.blue
                             : const Color(0xFF77818C))),
                   ),
                   icon: Image.asset(
                     "assets/icons/energyIcon.png",
-                    color: operating == true
+                    color: controller.operating == true
                         ? Colors.blue
                         : const Color(0xFF77818C),
                   ),
@@ -170,7 +162,7 @@ class _AssetsViewState extends State<AssetsView> {
                     "Sensor de Energia",
                     maxLines: 1,
                     style: TextStyle(
-                      color: operating == true
+                      color: controller.operating == true
                           ? Colors.blue
                           : const Color(0xFF77818C),
                       fontFamily: 'Roboto',
@@ -178,19 +170,7 @@ class _AssetsViewState extends State<AssetsView> {
                     ),
                   ),
                   onPressed: () {
-                    setState(() {
-                      operating = !operating;
-                      if (operating == true) {
-                        critic = false;
-                      }
-                    });
-                    if (operating == true) {
-                      controller.filterStatusNodes("operating");
-                    }
-
-                    if (operating == false) {
-                      controller.disposeSearch();
-                    }
+                    controller.changeFilterState("operating");
                   },
                 ),
               ),
@@ -205,37 +185,26 @@ class _AssetsViewState extends State<AssetsView> {
                     shape: MaterialStatePropertyAll(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(3))),
                     side: MaterialStatePropertyAll(BorderSide(
-                        color: critic == true
+                        color: controller.critic == true
                             ? Colors.blue
                             : const Color(0xFF77818C))),
                   ),
                   icon: Image.asset(
                     "assets/icons/criticalIcon.png",
-                    color:
-                        critic == true ? Colors.blue : const Color(0xFF77818C),
+                    color: controller.critic == true
+                        ? Colors.blue
+                        : const Color(0xFF77818C),
                   ),
                   label: Text(
                     "Critico",
                     style: TextStyle(
-                        color: critic == true
+                        color: controller.critic == true
                             ? Colors.blue
                             : const Color(0xFF77818C),
                         fontFamily: 'Roboto'),
                   ),
                   onPressed: () {
-                    setState(() {
-                      critic = !critic;
-                      if (critic == true) {
-                        operating = false;
-                      }
-                    });
-                    if (critic == true) {
-                      controller.filterStatusNodes("alert");
-                    }
-
-                    if (critic == false) {
-                      controller.disposeSearch();
-                    }
+                    controller.changeFilterState("alert");
                   },
                 ),
               ),
