@@ -22,3 +22,7 @@ In the View, the items were displayed in a tree format as described in the chall
 - API: [fake-api.tractian.com](fake-api.tractian.com)
 
 ## Video Result:
+
+
+https://github.com/user-attachments/assets/c843057a-af52-4948-bf92-db2964f97281
+
