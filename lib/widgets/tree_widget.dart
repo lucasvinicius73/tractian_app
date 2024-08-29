@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:tractian_app/models/asset_model.dart';
 import 'package:tractian_app/models/location_model.dart';
@@ -13,12 +12,18 @@ class TreeWidget extends StatefulWidget {
   State<TreeWidget> createState() => _TreeWidgetState();
 }
 
+bool drop = false;
+
 class _TreeWidgetState extends State<TreeWidget> {
-  bool drop = false;
+  @override
+  void initState() {
+    drop = widget.node.children.length > 5 ? false : true;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-   // print("Nó ${widget.node.data} tem ${widget.node.children.length} filhos");
+    // print("Nó ${widget.node.data} tem ${widget.node.children.length} filhos");
     String icon = 'assets/icons/criticalIcon.png';
     Icon? status;
     if (widget.node.data is LocationModel) {

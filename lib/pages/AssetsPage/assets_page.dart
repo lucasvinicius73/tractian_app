@@ -91,7 +91,7 @@ class _AssetsPageState extends State<AssetsPage> {
                   critic = false;
                   operating = false;
                 });
-                controller2.disposeSearch();
+                controller2.fetchAll(widget.companie);
               },
               child: const Icon(Icons.restart_alt),
             ),
@@ -112,7 +112,7 @@ class _AssetsPageState extends State<AssetsPage> {
             child: TextFormField(
               //onChanged: (value) {},
               onFieldSubmitted: (value) {
-                controller.searchItemNode(value);
+                controller2.searchItemNode(value);
               },
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.only(

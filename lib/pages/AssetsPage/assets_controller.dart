@@ -253,7 +253,6 @@ class AssetsController extends ChangeNotifier {
       Node<Model>? father = nodeIdMap[nodeSon.data.parentId];
       compareAndRemoveSearch(father!, name);
       while (father!.data.parentId != null) {
-        //compareAndRemove(father, name);
         father = nodeIdMap[father.data.parentId]!;
       }
       Node<Model>? fatherLocal = findFatherSearch(father, name);

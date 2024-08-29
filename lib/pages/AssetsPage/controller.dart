@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:string_similarity/string_similarity.dart';
 import 'package:tractian_app/models/asset_model.dart';
 import 'package:tractian_app/models/companie_model.dart';
 import 'package:tractian_app/models/location_model.dart';
@@ -31,6 +32,8 @@ class AssetsController2 extends ChangeNotifier {
   }
 
   fetchAll(Companie companie) async {
+    root.children.clear();
+    disposeSearch();
     await getLocations(companie);
     await getAssets(companie);
     await createHashTable();
@@ -111,7 +114,7 @@ class AssetsController2 extends ChangeNotifier {
     }
     for (var element in aux.values) {
       Node<Model> son = Node(element);
-      Node<Model>? father = findFatherAndRemoveBrothers(son, status);
+      Node<Model>? father = findFatherAndRemoveBrothersFilter(son, status);
       if (father != null) {
         searchResult.children.add(father);
       }
@@ -121,7 +124,8 @@ class AssetsController2 extends ChangeNotifier {
     notifyListeners();
   }
 
-  Node<Model>? findFatherAndRemoveBrothers(Node<Model> nodeSon, String status) {
+  Node<Model>? findFatherAndRemoveBrothersFilter(
+      Node<Model> nodeSon, String status) {
     if (nodeSon.data.parentId != null) {
       Node<Model>? father = nodeIdMap[nodeSon.data.parentId] as Node<Model>?;
       compareAndRemoveFilter(father!, status);
@@ -132,11 +136,12 @@ class AssetsController2 extends ChangeNotifier {
         father!.children.clear();
         father.children.add(aux);
       }
-      Node<Model>? fatherLocal = findFatherAndRemoveBrothers(father, status);
+      Node<Model>? fatherLocal =
+          findFatherAndRemoveBrothersFilter(father, status);
       if (fatherLocal == null) {
         return father;
       } else {
-        var aux = findFatherAndRemoveBrothers(fatherLocal, status);
+        var aux = findFatherAndRemoveBrothersFilter(fatherLocal, status);
         if (aux != null) {
           return aux;
         } else {
@@ -165,5 +170,69 @@ class AssetsController2 extends ChangeNotifier {
         node.children.remove(node.children[i]);
       }
     }
+  }
+
+  searchItemNode(String name) {
+    disposeSearch();
+    print("Iniciando pesquisa");
+    Map<String, Node<Model>> aux = {};
+    for (var node in nodeIdMap.values) {
+      node as Node<Model>;
+      if (node.data.name.toLowerCase().similarityTo(name.toLowerCase()) >
+          0.30) {
+        print("Nó encontrado Antes de filtrar: ${node.data.name}");
+
+        if (node.data.parentId == null && node.data.locationId == null) {
+          aux[node.data.id] = node;
+          print("Nó encontrado: ${node.data.name}");
+        } else if (node.data.parentId != null) {
+          aux[node.data.parentId!] = node;
+          print("Nó encontrado: ${node.data.name}");
+        } else if (node.data.locationId != null) {
+          aux[node.data.locationId!] = node;
+          print("Nó encontrado: ${node.data.name}");
+        }
+      }
+    }
+    for (var nodeSon in aux.values) {
+      Node<Model>? father = findFatherAndRemoveBrothersSearch(nodeSon, name);
+      if (father != null) {
+        searchResult.children.add(father);
+      }
+    }
+    notifyListeners();
+  }
+
+  findFatherAndRemoveBrothersSearch(Node<Model> nodeSon, String name) {
+    if (nodeSon.data.parentId == null && nodeSon.data.locationId == null) {
+      return nodeSon;
+    }
+    if (nodeSon.data.parentId != null) {
+      Node<Model>? father = nodeIdMap[nodeSon.data.parentId] as Node<Model>?;
+      findFatherAndRemoveBrothersSearch(father!, name);
+      while (father!.data.parentId != null) {
+        father = nodeIdMap[father.data.parentId]! as Node<Model>?;
+      }
+      Node<Model>? fatherLocal =
+          findFatherAndRemoveBrothersSearch(father, name);
+      if (fatherLocal == null) {
+        return father;
+      } else {
+        var aux = findFatherAndRemoveBrothersSearch(fatherLocal, name);
+        if (aux != null) {
+          return aux;
+        } else {
+          return fatherLocal;
+        }
+      }
+    }
+    if (nodeSon.data.locationId != null) {
+      var locationFather = nodeIdMap[nodeSon.data.locationId];
+      locationFather!.children.clear();
+      locationFather.children.add(nodeSon);
+
+      return locationFather;
+    }
+    return null;
   }
 }
