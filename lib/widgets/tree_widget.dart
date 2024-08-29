@@ -21,10 +21,11 @@ class _TreeWidgetState extends State<TreeWidget> {
     super.initState();
   }
 
+  String icon = '';
+
   @override
   Widget build(BuildContext context) {
     // print("Nó ${widget.node.data} tem ${widget.node.children.length} filhos");
-    String icon = 'assets/icons/criticalIcon.png';
     Icon? status;
     if (widget.node.data is LocationModel) {
       icon = 'assets/icons/GoLocation.png';
@@ -66,10 +67,12 @@ class _TreeWidgetState extends State<TreeWidget> {
                   : const SizedBox(
                       width: 23,
                     ),
-              Image.asset(
-                icon,
-                scale: 1.7,
-              ),
+              icon.isNotEmpty
+                  ? Image.asset(
+                      icon,
+                      scale: 1.7,
+                    )
+                  : const SizedBox(),
               SizedBox(
                 width: 232,
                 child: Text(
