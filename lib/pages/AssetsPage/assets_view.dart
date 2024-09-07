@@ -142,12 +142,12 @@ class _AssetsViewState extends State<AssetsView> {
                 height: 32,
                 child: OutlinedButton.icon(
                   style: ButtonStyle(
-                    shape: MaterialStatePropertyAll(
+                    shape: WidgetStatePropertyAll(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
-                    side: MaterialStatePropertyAll(BorderSide(
+                    side: WidgetStatePropertyAll(BorderSide(
                         color: controller.operating == true
                             ? Colors.blue
                             : const Color(0xFF77818C))),
@@ -182,9 +182,9 @@ class _AssetsViewState extends State<AssetsView> {
                 height: 32,
                 child: OutlinedButton.icon(
                   style: ButtonStyle(
-                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                    shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(3))),
-                    side: MaterialStatePropertyAll(BorderSide(
+                    side: WidgetStatePropertyAll(BorderSide(
                         color: controller.critic == true
                             ? Colors.blue
                             : const Color(0xFF77818C))),

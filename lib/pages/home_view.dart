@@ -57,10 +57,10 @@ class _HomeViewState extends State<HomeView> {
         height: 76,
         child: ElevatedButton(
           style: ButtonStyle(
-              shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+              shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(7))),
               backgroundColor:
-                  const MaterialStatePropertyAll(Color(0xFF2188FF))),
+                  const WidgetStatePropertyAll(Color(0xFF2188FF))),
           child: Row(
             children: [
               Image.asset('assets/icons/homeicon.png'),

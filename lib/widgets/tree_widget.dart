@@ -13,20 +13,13 @@ class TreeWidget extends StatefulWidget {
 }
 
 bool drop = false;
+String icon = '';
+Icon? status;
 
 class _TreeWidgetState extends State<TreeWidget> {
   @override
   void initState() {
     drop = widget.node.children.length > 5 ? false : true;
-    super.initState();
-  }
-
-  String icon = '';
-
-  @override
-  Widget build(BuildContext context) {
-    // print("Nó ${widget.node.data} tem ${widget.node.children.length} filhos");
-    Icon? status;
     if (widget.node.data is LocationModel) {
       icon = 'assets/icons/GoLocation.png';
     } else if (widget.node.data is AssetModel) {
@@ -49,6 +42,12 @@ class _TreeWidgetState extends State<TreeWidget> {
         }
       }
     }
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -97,6 +96,7 @@ class _TreeWidgetState extends State<TreeWidget> {
                   padding: const EdgeInsets.only(left: 20),
                   child: SuperListView.builder(
                     shrinkWrap: true,
+                    cacheExtent: 200,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: widget.node.children.length,
                     itemBuilder: (context, index) =>
